@@ -1,119 +1,197 @@
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <iomanip>
 
-int* createArray(int size) {
-    return new int[size];
+const int WAGONS = 18;
+const int SEATS = 36;
+
+void initializeEmpty(int train[WAGONS][SEATS]) {
+    for (int i = 0; i < WAGONS; i++) {
+        for (int j = 0; j < SEATS; j++) {
+            train[i][j] = 0;
+        }
+    }
+    std::cout << "Все места освобождены.\n";
 }
 
-void fillArray(int* arr, int size) {
-    std::cout << "������� " << size << " ��������� �������:\n";
-    for (int i = 0; i < size; i++) {
-        std::cout << "������� [" << i << "]: ";
-        std::cin >> arr[i];
+void initializeRandom(int train[WAGONS][SEATS]) {
+    srand(time(0));
+    for (int i = 0; i < WAGONS; i++) {
+        for (int j = 0; j < SEATS; j++) {
+            train[i][j] = rand() % 2;
+        }
+    }
+    std::cout << "Поезд заполнен случайным образом.\n";
+}
+
+void displaySeats(int train[WAGONS][SEATS]) {
+    std::cout << "\n=== ТАБЛИЦА МЕСТ В ПОЕЗДЕ ===\n";
+    std::cout << "Вагон\\Место ";
+    
+    for (int j = 0; j < SEATS; j++) {
+        std::cout << std::setw(3) << j + 1;
+    }
+    std::cout << "\n";
+    
+    for (int i = 0; i < WAGONS; i++) {
+        std::cout << "Вагон " << std::setw(2) << i + 1 << ":   ";
+        for (int j = 0; j < SEATS; j++) {
+            std::cout << std::setw(3) << train[i][j];
+        }
+        std::cout << "\n";
+    }
+    std::cout << "0 - свободно, 1 - занято\n";
+}
+
+void reserveSeat(int train[WAGONS][SEATS]) {
+    int wagon, seat;
+    
+    std::cout << "Введите номер вагона (1-" << WAGONS << "): ";
+    std::cin >> wagon;
+    
+    std::cout << "Введите номер места (1-" << SEATS << "): ";
+    std::cin >> seat;
+    
+    if (wagon < 1 || wagon > WAGONS || seat < 1 || seat > SEATS) {
+        std::cout << "Ошибка: неверный номер вагона или места!\n";
+        return;
+    }
+    
+    if (train[wagon-1][seat-1] == 1) {
+        std::cout << "Место уже занято!\n";
+    } else {
+        train[wagon-1][seat-1] = 1;
+        std::cout << "Место успешно забронировано!\n";
     }
 }
 
-void printArray(int* arr, int size) {
-    std::cout << "������: ";
-    for (int i = 0; i < size; i++) {
-        std::cout << arr[i] << " ";
+void freeSeat(int train[WAGONS][SEATS]) {
+    int wagon, seat;
+    
+    std::cout << "Введите номер вагона (1-" << WAGONS << "): ";
+    std::cin >> wagon;
+    
+    std::cout << "Введите номер места (1-" << SEATS << "): ";
+    std::cin >> seat;
+    
+    if (wagon < 1 || wagon > WAGONS || seat < 1 || seat > SEATS) {
+        std::cout << "Ошибка: неверный номер вагона или места!\n";
+        return;
     }
-    std::cout << std::endl;
+    
+    if (train[wagon-1][seat-1] == 0) {
+        std::cout << "Место уже свободно!\n";
+    } else {
+        train[wagon-1][seat-1] = 0;
+        std::cout << "Место успешно освобождено!\n";
+    }
 }
 
-int* insertElement(int* arr, int& size, int index, int value) {
-    if (index < 0 || index > size) {
-        std::cout << "������: �������� ������!\n";
-        return arr;
+void countFreeInWagon(int train[WAGONS][SEATS]) {
+    int wagon;
+    
+    std::cout << "Введите номер вагона (1-" << WAGONS << "): ";
+    std::cin >> wagon;
+    
+    if (wagon < 1 || wagon > WAGONS) {
+        std::cout << "Ошибка: неверный номер вагона!\n";
+        return;
     }
-
-    int* newArr = new int[size + 1];
-
-    for (int i = 0; i < index; i++) {
-        newArr[i] = arr[i];
+    
+    int freeCount = 0;
+    for (int j = 0; j < SEATS; j++) {
+        if (train[wagon-1][j] == 0) {
+            freeCount++;
+        }
     }
-
-    newArr[index] = value;
-
-    for (int i = index; i < size; i++) {
-        newArr[i + 1] = arr[i];
-    }
-
-    size++;
-
-    delete[] arr;
-
-    return newArr;
+    
+    std::cout << "В вагоне " << wagon << " свободно " << freeCount 
+              << " мест из " << SEATS << "\n";
 }
 
-int* deleteElement(int* arr, int& size, int index) {
-    if (index < 0 || index >= size) {
-        std::cout << "������: �������� ������!\n";
-        return arr;
+void countTotalFree(int train[WAGONS][SEATS]) {
+    int totalFree = 0;
+    
+    for (int i = 0; i < WAGONS; i++) {
+        for (int j = 0; j < SEATS; j++) {
+            if (train[i][j] == 0) {
+                totalFree++;
+            }
+        }
     }
-
-    if (size == 1) {
-        delete[] arr;
-        size = 0;
-        return nullptr;
-    }
-
-    int* newArr = new int[size - 1];
-
-    for (int i = 0; i < index; i++) {
-        newArr[i] = arr[i];
-    }
-
-    for (int i = index + 1; i < size; i++) {
-        newArr[i - 1] = arr[i];
-    }
-
-    size--;
-
-    delete[] arr;
-
-    return newArr;
+    
+    int totalSeats = WAGONS * SEATS;
+    std::cout << "Всего свободно " << totalFree << " мест из " 
+              << totalSeats << "\n";
 }
 
-void deleteArray(int* arr) {
-    delete[] arr;
-}
-
-void demonstrateFunctions() {
-    int size;
-    std::cout << "������� ������ �������: ";
-    std::cin >> size;
-
-    int* arr = createArray(size);
-
-    fillArray(arr, size);
-
-    std::cout << "\n�������� ������:\n";
-    printArray(arr, size);
-
-    std::cout << "\n--- ������������ ������� ---\n";
-    int insertIndex, insertValue;
-    std::cout << "������� ������ ��� �������: ";
-    std::cin >> insertIndex;
-    std::cout << "������� �������� ��� �������: ";
-    std::cin >> insertValue;
-
-    arr = insertElement(arr, size, insertIndex, insertValue);
-    std::cout << "����� �������:\n";
-    printArray(arr, size);
-
-    std::cout << "\n--- ������������ �������� ---\n";
-    int deleteIndex;
-    std::cout << "������� ������ ��� ��������: ";
-    std::cin >> deleteIndex;
-
-    arr = deleteElement(arr, size, deleteIndex);
-    std::cout << "����� ��������:\n";
-    printArray(arr, size);
-
-    deleteArray(arr);
+void showMenu(int train[WAGONS][SEATS]) {
+    int choice;
+    
+    do {
+        std::cout << "\n=== МЕНЮ УПРАВЛЕНИЯ ===\n";
+        std::cout << "1. Показать таблицу мест\n";
+        std::cout << "2. Забронировать место\n";
+        std::cout << "3. Освободить место\n";
+        std::cout << "4. Посчитать свободные места в вагоне\n";
+        std::cout << "5. Посчитать общее количество свободных мест\n";
+        std::cout << "0. Выйти из программы\n";
+        std::cout << "Выберите действие: ";
+        std::cin >> choice;
+        
+        switch (choice) {
+            case 1:
+                displaySeats(train);
+                break;
+            case 2:
+                reserveSeat(train);
+                break;
+            case 3:
+                freeSeat(train);
+                break;
+            case 4:
+                countFreeInWagon(train);
+                break;
+            case 5:
+                countTotalFree(train);
+                break;
+            case 0:
+                std::cout << "Выход из программы.\n";
+                break;
+            default:
+                std::cout << "Неверный выбор. Попробуйте снова.\n";
+        }
+    } while (choice != 0);
 }
 
 int main() {
-    demonstrateFunctions();
+    int train[WAGONS][SEATS];
+    int initChoice;
+    
+    setlocale(LC_ALL, "Russian");
+    
+    std::cout << "=== СИСТЕМА УПРАВЛЕНИЯ БРОНИРОВАНИЕМ МЕСТ ===\n";
+    std::cout << "Поезд имеет " << WAGONS << " вагонов по " << SEATS << " мест в каждом\n";
+    std::cout << "\nВыберите режим инициализации:\n";
+    std::cout << "1. Заполнить случайным образом\n";
+    std::cout << "2. Оставить все места пустыми\n";
+    std::cout << "Ваш выбор: ";
+    std::cin >> initChoice;
+    
+    switch (initChoice) {
+        case 1:
+            initializeRandom(train);
+            break;
+        case 2:
+            initializeEmpty(train);
+            break;
+        default:
+            std::cout << "Неверный выбор. Инициализирую пустым поездом.\n";
+            initializeEmpty(train);
+    }
+    
+    showMenu(train);
+    
     return 0;
 }
